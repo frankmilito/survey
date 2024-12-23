@@ -1,0 +1,235 @@
+import {
+  Drawer,
+  DrawerBody,
+  DrawerHeader,
+  DrawerOverlay,
+  DrawerContent,
+  Button,
+  Divider,
+  Flex,
+  Select,
+  VStack,
+} from "@chakra-ui/react";
+import { SVFormControl } from "../../ui/forms/FormControl";
+import { useTranslation } from "react-i18next";
+import { FormProvider, useForm } from "react-hook-form";
+import { SVSelect } from "../../ui/forms/Select";
+import SingleChoice from "../questions/options/SingleChoice";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import MultiChoice from "../questions/options/MultiChoice";
+import InputOption from "../questions/options/InputOption";
+import InputTextAreaOption from "../questions/options/InputTextAreaOption";
+import PromoterOption from "../questions/options/PromoterOption";
+import MoodScaleOption from "../questions/options/MoodScaleOption";
+import { questionOptions } from "@/app/data/helpers";
+import { questionSchema } from "@/app/schemas";
+import { useAppDispatch, useAppSelector } from "@/store";
+import {
+  surveyActions,
+  surveySelector,
+} from "@/app/data/app/slices/surveySlice";
+import SVButton from "../../ui/button";
+import { useEffect } from "react";
+
+export type Question = z.infer<typeof questionSchema>;
+
+export function EditQuestion({ onClose, isOpen, question, surveyId }) {
+  const dispatch = useAppDispatch();
+  const isLoading = useAppSelector(surveySelector.isLoading);
+  const teamId = useAppSelector((state) => state.app.team);
+  const [t] = useTranslation();
+
+  const methods = useForm<Question>({
+    resolver: zodResolver(questionSchema),
+    defaultValues: {
+      type: question?.type,
+      questionText: question?.questionText,
+      options: question?.options,
+      required: question?.required,
+      allowOtherAnswer: question?.allowOtherAnswer,
+    },
+  });
+
+  const formValues = methods.watch();
+
+  let content;
+
+  switch (formValues.type) {
+    case "SINGLE_CHOICE":
+      content = <SingleChoice currentOption={question?.options} />;
+      break;
+
+    case "MULTIPLE_CHOICE":
+      content = <MultiChoice currentOption={question?.options} />;
+      break;
+    case "TEXTINPUT_CHOICE":
+      content = <InputOption />;
+      break;
+
+    case "TEXTAREA_CHOICE":
+      content = <InputTextAreaOption />;
+      break;
+
+    case "MOOD_CHOICE":
+      content = <MoodScaleOption />;
+      break;
+    case "PROMOTER_CHOICE":
+      content = <PromoterOption />;
+
+      break;
+
+    default:
+      break;
+  }
+
+  const onSubmit = (data) => {
+    data.questionId = question._id;
+    data.surveyId = surveyId;
+    data.team = teamId;
+    console.log(data);
+    dispatch(
+      surveyActions.editSurveyQuestion({
+        callback: onClose,
+        ...data,
+      })
+    );
+  };
+
+  useEffect(() => {
+    if (question) {
+      methods.reset({
+        type: question?.type,
+        questionText: question?.questionText,
+        options: question?.options,
+        required: question?.required,
+        allowOtherAnswer: question?.allowOtherAnswer,
+      });
+    }
+  }, [question, methods.reset]);
+  return (
+    <>
+      <Drawer
+        placement={"right"}
+        onClose={onClose}
+        isOpen={isOpen}
+        isFullHeight={false}
+        size="lg"
+        closeOnEsc
+        closeOnOverlayClick={true}
+      >
+        <DrawerOverlay />
+        <FormProvider {...methods}>
+          <form onSubmit={methods.handleSubmit(onSubmit)}>
+            <DrawerContent>
+              <DrawerHeader my={4}>{t("survey.editQuestion")}</DrawerHeader>
+              <DrawerBody>
+                <VStack spacing={6} align="stretch">
+                  <SVFormControl
+                    label={t("questions.question")}
+                    inputProps={{
+                      ...methods.register("questionText"),
+                    }}
+                    error={methods.formState.errors.questionText}
+                  />
+
+                  <Flex gap={4}>
+                    <SVFormControl
+                      label={t("questions.questionType")}
+                      error={methods.formState.errors.type}
+                      m={4}
+                    >
+                      <SVSelect
+                        customers={questionOptions}
+                        onSelect={(select) => {
+                          methods.setValue(
+                            "type",
+                            select?.value as Question["type"]
+                          );
+                          methods.trigger("type");
+                          methods.clearErrors("questionText");
+                        }}
+                      />
+                    </SVFormControl>
+                    <SVFormControl
+                      flex={1}
+                      error={methods.formState.errors.required}
+                      label={t("questions.makeOptional")}
+                      m={4}
+                    >
+                      <Select
+                        {...methods.register("rightLabel", {
+                          setValueAs: (value) => value === "Yes",
+                        })}
+                        focusBorderColor="purple.400"
+                      >
+                        {["Yes", "No"].map((item) => (
+                          <option value={item} key={item}>
+                            {item}
+                          </option>
+                        ))}
+                      </Select>
+                    </SVFormControl>
+                  </Flex>
+
+                  {formValues.type === "PROMOTER_CHOICE" && (
+                    <Flex gap={4}>
+                      <SVFormControl
+                        flex={1}
+                        label={t("questions.leftLabel")}
+                        m={4}
+                      >
+                        <Select
+                          {...methods.register("leftLabel")}
+                          focusBorderColor="purple.400"
+                        >
+                          {["Yes", "No"].map((item) => (
+                            <option value={item} key={item}>
+                              {item}
+                            </option>
+                          ))}
+                        </Select>
+                      </SVFormControl>
+                      <SVFormControl
+                        flex={1}
+                        label={t("questions.rightLabel")}
+                        m={4}
+                      >
+                        <Select
+                          {...methods.register("rightLabel")}
+                          focusBorderColor="purple.400"
+                        >
+                          {["Yes", "No"].map((item) => (
+                            <option value={item} key={item}>
+                              {item}
+                            </option>
+                          ))}
+                        </Select>
+                      </SVFormControl>
+                    </Flex>
+                  )}
+
+                  <Divider />
+                  {content}
+                </VStack>
+
+                <Flex mt={8} justify="space-between">
+                  <Button
+                    variant="outline"
+                    colorScheme="purple"
+                    onClick={onClose}
+                  >
+                    {t("common.cancel")}
+                  </Button>
+                  <SVButton isLoading={isLoading} type="submit">
+                    {t("common.save")}
+                  </SVButton>
+                </Flex>
+              </DrawerBody>
+            </DrawerContent>
+          </form>
+        </FormProvider>
+      </Drawer>
+    </>
+  );
+}
