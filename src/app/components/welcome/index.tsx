@@ -33,6 +33,8 @@ const Welcome = () => {
     companyDetails?.credential?.publicKey
   );
 
+  console.log(teamId);
+
   useEffect(() => {
     dispatch(appActions.getProfile());
   }, []);
