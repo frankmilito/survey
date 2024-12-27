@@ -59,7 +59,7 @@ function Login() {
         <Image src={"/logo.svg"} alt="app logo" height="40px" />
         <Box textAlign="center">
           <Heading fontSize={{ sm: "xl", md: "2xl" }}>
-            {t("login.welcome")}
+            {/* {t("login.welcome")} */}tsst
           </Heading>
           <Text mt={2} color="gray.500" fontSize={{ sm: "sm", md: "md" }}>
             {t("login.dontHaveAnAccount")}{" "}
