@@ -61,7 +61,7 @@ const RecentSurveys = () => {
         }}
         gap={4}
       >
-        {surveys?.map((item) => {
+        {(surveys || [])?.map((item) => {
           const { title, description, isActive, _id } = item;
           return (
             <GridItem key={item.title} w="100%" p="5">
