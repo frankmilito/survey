@@ -30,7 +30,6 @@ const RecentSurveys = () => {
   const [t] = useTranslation();
   const surveys = useAppSelector(surveySelector.getRecentSurvey);
 
-  console.log(surveys);
   return (
     <DashboardCard
       title={t("dashboard.recentSurvey")}
@@ -43,7 +42,7 @@ const RecentSurveys = () => {
         </Flex>
       }
     >
-      {/* {surveys?.length === 0 && (
+      {surveys?.length === 0 && (
         <Box
           h="32"
           display="flex"
@@ -54,7 +53,7 @@ const RecentSurveys = () => {
             {t("survey.recentCreated")}
           </Text>
         </Box>
-      )} */}
+      )}
       <Grid
         templateColumns={{
           base: "repeat(1, 1fr)",
@@ -62,7 +61,7 @@ const RecentSurveys = () => {
         }}
         gap={4}
       >
-        {/* {(surveys || [])?.map((item) => {
+        {surveys?.map((item) => {
           const { title, description, isActive, _id } = item;
           return (
             <GridItem key={item.title} w="100%" p="5">
@@ -135,7 +134,7 @@ const RecentSurveys = () => {
               </Link>
             </GridItem>
           );
-        })} */}
+        })}
       </Grid>
     </DashboardCard>
   );

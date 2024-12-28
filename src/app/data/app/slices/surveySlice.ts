@@ -46,7 +46,7 @@ export const initialState: AppState = {
   currentSurvey: initSurveyState,
   surveys: [],
   company: {},
-  recentSurvey: {},
+  recentSurvey: [],
   stats: {},
 };
 
